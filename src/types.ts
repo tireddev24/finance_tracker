@@ -11,6 +11,12 @@ export interface Transaction {
 }
 
 
+export interface ChartData {
+    name: string
+    total: number
+}
+
+
 //id: string
 // ID, especially when incremental are easy to trace. In the case of an attack on my database or datastore, it would make it harder for such attacker to find a transaction just by entering any number. A combination of letters and numbers makes it more difficult to access sensitive data.
 

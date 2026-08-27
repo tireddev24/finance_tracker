@@ -1,14 +1,27 @@
 
 import { useEffect, useState, } from 'react'
 import './App.css'
-import { addTransaction, editTransaction, getBalance, getMonthlyTotals, getTotalByType, getVisibleTransactions, removeTransaction, searchTransactions } from './logic/transactions'
+import { addTransaction, editTransaction, getBalance, getMonthlyTotals, getTotalByType, getVisibleTransactions, objConvertToRechartRequired, removeTransaction, } from './logic/transactions'
 import { loadTransactions, saveTransactions } from './storage/transactionStorage'
-import type { Transaction } from './types'
-
+import type { Transaction, ChartData } from './types'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface AddTransactionFormProps {
   transactions: Transaction[],
   setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>
+}
+
+function MonthlyChart({ data }: { data: ChartData[] }) {
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={data}>
+        <XAxis dataKey="name" />
+        <YAxis />
+        <Tooltip />
+        <Bar dataKey="total" fill="#4f46e5" />
+      </BarChart>
+    </ResponsiveContainer>
+  );
 }
 
 function AddTransactionForm({ transactions, setTransactions }: AddTransactionFormProps) {
@@ -83,6 +96,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const uniqueCategories = [...new Set(transactions.map(t => t.category))]
+  const monthlyTotals = getMonthlyTotals(transactions)
 
 
 
@@ -203,8 +217,12 @@ function App() {
 
       <table>
         <tr><th>Month</th><th>Total</th></tr>
-        {Object.entries(getMonthlyTotals(transactions)).map(([month, total]) => (<tr key={month}><td>{month}</td><td>{total}</td></tr>))}
+        {Object.entries(monthlyTotals).map(([month, total]) => (<tr key={month}><td>{month}</td><td>{total}</td></tr>))}
       </table>
+
+      <MonthlyChart data={objConvertToRechartRequired(monthlyTotals)} />
+
+
 
       <AddTransactionForm transactions={transactions} setTransactions={setTransactions} />
     </>

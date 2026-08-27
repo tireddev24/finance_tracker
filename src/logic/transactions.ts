@@ -1,4 +1,4 @@
-import { type Transaction, type TransactionType } from "../types";
+import type { ChartData, Transaction, TransactionType } from "../types";
 
 export function addTransaction(
     transactions: Transaction[],
@@ -113,4 +113,11 @@ export function getVisibleTransactions(
         result = searchTransactions(result, query);
     }
     return result;
+}
+
+export function objConvertToRechartRequired(obj: Record<string, number>): ChartData[] {
+
+    return Object.entries(obj).map(([name, total]) => ({ name, total }))
+
+
 }
