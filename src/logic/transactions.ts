@@ -77,3 +77,40 @@ export function filterByCategory(
     return transactionsByCategory;
 
 }
+
+export function searchTransactions(transactions: Transaction[], query: string): Transaction[] {
+    const q = query.toLowerCase()
+    return transactions.filter((t) => t.category.toLowerCase().includes(q) ||
+        (t.note?.toLowerCase().includes(q) ?? false))
+
+}
+
+export function getMonthlyTotals(transactions: Transaction[]): Record<string, number> {
+    //group by "YYYY-MM", sum net (income - expense) per month
+
+    const monthlyTotals = transactions.reduce<Record<string, number>>((totals, t) => {
+
+        const yyyyMm = t.date.slice(0, 7)
+
+        totals[yyyyMm] = (totals[yyyyMm] ?? 0) + (t.type === 'income' ? t.amount : -t.amount);
+
+        return totals
+
+    }, {})
+
+    return monthlyTotals;
+
+
+}
+
+export function getVisibleTransactions(
+    transactions: Transaction[],
+    query: string,
+    category: string
+): Transaction[] {
+    let result = category === "all" ? transactions : filterByCategory(transactions, category);
+    if (query.trim() !== "") {
+        result = searchTransactions(result, query);
+    }
+    return result;
+}

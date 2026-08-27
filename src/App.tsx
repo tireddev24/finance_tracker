@@ -1,7 +1,7 @@
 
 import { useEffect, useState, } from 'react'
 import './App.css'
-import { addTransaction, editTransaction, getBalance, getTotalByType, removeTransaction } from './logic/transactions'
+import { addTransaction, editTransaction, getBalance, getMonthlyTotals, getTotalByType, getVisibleTransactions, removeTransaction, searchTransactions } from './logic/transactions'
 import { loadTransactions, saveTransactions } from './storage/transactionStorage'
 import type { Transaction } from './types'
 
@@ -80,6 +80,10 @@ function AddTransactionForm({ transactions, setTransactions }: AddTransactionFor
 function App() {
 
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [searchQuery, setSearchQuery] = useState<string>("")
+  const [selectedCategory, setSelectedCategory] = useState("all")
+  const uniqueCategories = [...new Set(transactions.map(t => t.category))]
+
 
 
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -122,7 +126,7 @@ function App() {
       category: transaction.category,
       date: transaction.date,
       type: transaction.type,
-      note: transaction.note
+      note: transaction.note ?? ""
     })
   }
   const handleEditTransaction = (id: string) => {
@@ -155,7 +159,13 @@ function App() {
 
         Hello World
       </h1>
+      <input placeholder="Search by category or note" type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+      <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+        <option value="all">All</option>
 
+        {uniqueCategories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+
+      </select>
       <table>
         <tr>
           <th>ID</th>
@@ -167,8 +177,7 @@ function App() {
           <th>Edit</th>
           <th>Delete</th>
         </tr>
-        {transactions.map((t) => (t.id !== editingId ? <tr key={t.id}>
-
+        {getVisibleTransactions(transactions, searchQuery, selectedCategory).map((t) => (t.id !== editingId ? <tr key={t.id}>
           <td>{t.id}</td>
           <td>{t.amount}</td>
           <td>{t.category}</td>
@@ -191,9 +200,13 @@ function App() {
             </td><td><button onClick={() => { setEditingId(null) }}>Cancel</button></td> </tr>
         ))}
       </table>
+
+      <table>
+        <tr><th>Month</th><th>Total</th></tr>
+        {Object.entries(getMonthlyTotals(transactions)).map(([month, total]) => (<tr key={month}><td>{month}</td><td>{total}</td></tr>))}
+      </table>
+
       <AddTransactionForm transactions={transactions} setTransactions={setTransactions} />
-      <button onClick={handleBalance}>Get Balance</button>
-      <button onClick={handleGetTotalByType}>Get Total By Type</button>
     </>
   )
 }
