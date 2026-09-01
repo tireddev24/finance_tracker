@@ -181,6 +181,7 @@ function App() {
 
           Finance Tracker
         </h1>
+
         <div className={cardClasses}>
           <h2 className="text-xl font-semibold">Balance</h2>
           <p className={`text-2xl font-bold ${getBalance(transactions) >= 0 ? "text-green-600" : "text-red-600"}`}>
@@ -188,6 +189,25 @@ function App() {
           </p>
         </div>
 
+        {/* Search */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <input
+            placeholder="Search by category or note"
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 p-2 rounded-md border-2 border-gray-300 focus:ring-2 ring-blue-500 outline-none"
+          />
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="p-2 rounded-md border-2 border-gray-300 focus:ring-2 ring-blue-500 outline-none"
+          >
+            <option value="all">All</option>
+            {uniqueCategories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+          </select>
+
+        </div>
         <div className={cardClasses}>
 
           {/* Desktop: real table, hidden below md */}
@@ -205,7 +225,14 @@ function App() {
               </tr>
             </thead>
             <tbody>
-              {getVisibleTransactions(transactions, searchQuery, selectedCategory).map((t) => (t.id !== editingId ? <tr key={t.id}>
+              {getVisibleTransactions(transactions, searchQuery, selectedCategory).length <= 0 ? <tr>
+                <td colSpan={6} className='font-bold text-lg text-center py-2'>No records to show</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr> : getVisibleTransactions(transactions, searchQuery, selectedCategory).map((t) => (t.id !== editingId ? <tr key={t.id}>
 
                 <td>{t.amount}</td>
                 <td>{t.category}</td>
@@ -236,41 +263,47 @@ function App() {
 
 
           <div className="md:hidden flex flex-col gap-3">
-            {getVisibleTransactions(transactions, searchQuery, selectedCategory).map((t) => t.id !== editingId ? <div key={t.id} className="border rounded-lg p-4 shadow-sm flex flex-col gap-1">
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-lg">{t.category}</span>
-                <span className={t.type === "income" ? "text-green-600" : "text-red-600"}>
-                  {t.type === "income" ? "+" : "-"}${t.amount}
-                </span>
-              </div>
-              <div className="text-sm text-gray-500">{t.date}</div>
-              {t.note && <div className="text-sm text-gray-600">{t.note}</div>}
-              <div className="flex gap-2 mt-2">
-                <button className={btnblue} onClick={() => handleSetToEditing(t.id)}>Edit</button>
-                <button className={btnred} onClick={() => handleRemoveTransaction(t.id)}>Delete</button>
-              </div>
-            </div> :
-              <div key={t.id} className='border rounded-lg p-4 shadow-sm flex flex-col gap-1'>
-                <div className='flex flex-col gap-2'>
-                  <input className={inputClasses} type="text" placeholder='Category...' value={editingValues.category} onChange={(e) => setEditingValues({ ...editingValues, category: e.target.value })} />
-                  <input className={inputClasses} type="text" placeholder='Amount...' value={editingValues.amount} onChange={(e) => setEditingValues({ ...editingValues, amount: Number(e.target.value) })} />
-                  <input className={inputClasses} type="date" value={editingValues.date} onChange={(e) => setEditingValues({ ...editingValues, date: e.target.value })} />
-                  <input className={inputClasses} type="text" placeholder='Additional notes...' value={editingValues.note} onChange={(e) => setEditingValues({ ...editingValues, note: e.target.value })} />
-                  <select className={inputClasses} value={editingValues.type} onChange={(e) => setEditingValues({ ...editingValues, type: e.target.value as "income" | "expense" })}>
-                    <option value="income">Income</option>
-                    <option value="expense">Expense</option>
-                  </select>
-                  <div className="flex gap-2 mt-2">
 
-                    <button className={btngreen} onClick={() => handleEditTransaction(t.id)}>Save</button>
-                    <button className={btnred} onClick={() => setEditingId(null)}>Cancel</button>
+            {getVisibleTransactions(transactions, searchQuery, selectedCategory).length > 0 ?
+              getVisibleTransactions(transactions, searchQuery, selectedCategory).map((t) => t.id !== editingId ? <div key={t.id} className="border rounded-lg p-4 shadow-sm flex flex-col gap-1">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-lg">{t.category}</span>
+                  <span className={t.type === "income" ? "text-green-600" : "text-red-600"}>
+                    {t.type === "income" ? "+" : "-"}${t.amount}
+                  </span>
+                </div>
+                <div className="text-sm text-gray-500">{t.date}</div>
+                {t.note && <div className="text-sm text-gray-600">{t.note}</div>}
+                <div className="flex gap-2 mt-2">
+                  <button className={btnblue} onClick={() => handleSetToEditing(t.id)}>Edit</button>
+                  <button className={btnred} onClick={() => handleRemoveTransaction(t.id)}>Delete</button>
+                </div>
+              </div> :
+                <div key={t.id} className='border rounded-lg p-4 shadow-sm flex flex-col gap-1'>
+                  <div className='flex flex-col gap-2'>
+                    <input className={inputClasses} type="text" placeholder='Category...' value={editingValues.category} onChange={(e) => setEditingValues({ ...editingValues, category: e.target.value })} />
+                    <input className={inputClasses} type="text" placeholder='Amount...' value={editingValues.amount} onChange={(e) => setEditingValues({ ...editingValues, amount: Number(e.target.value) })} />
+                    <input className={inputClasses} type="date" value={editingValues.date} onChange={(e) => setEditingValues({ ...editingValues, date: e.target.value })} />
+                    <input className={inputClasses} type="text" placeholder='Additional notes...' value={editingValues.note} onChange={(e) => setEditingValues({ ...editingValues, note: e.target.value })} />
+                    <select className={inputClasses} value={editingValues.type} onChange={(e) => setEditingValues({ ...editingValues, type: e.target.value as "income" | "expense" })}>
+                      <option value="income">Income</option>
+                      <option value="expense">Expense</option>
+                    </select>
+                    <div className="flex gap-2 mt-2">
+
+                      <button className={btngreen} onClick={() => handleEditTransaction(t.id)}>Save</button>
+                      <button className={btnred} onClick={() => setEditingId(null)}>Cancel</button>
+                    </div>
+
                   </div>
 
+
                 </div>
+              )
 
+              : <div className='border rounded-lg p-4 shadow-sm flex flex-col gap-1'>No records to show</div>
+            }
 
-              </div>
-            )}
           </div>
         </div>
 
@@ -280,24 +313,8 @@ function App() {
 
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3">
-          <input
-            placeholder="Search by category or note"
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 p-2 rounded-md border-2 border-gray-300 focus:ring-2 ring-blue-500 outline-none"
-          />
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="p-2 rounded-md border-2 border-gray-300 focus:ring-2 ring-blue-500 outline-none"
-          >
-            <option value="all">All</option>
-            {uniqueCategories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
-          </select>
 
-        </div>
+
 
 
         {/* Monthly Totals */}
